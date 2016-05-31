@@ -11,7 +11,7 @@ Instead of adding the matcher on the this object, you add them on the jasmineMig
     /* was:
          this.addMatchers({
     */
-    jasmineMigrate .addMatchers({
+    jasmineMigrate.addMatchers({
     
 ##Spies##
 Continue to use:
