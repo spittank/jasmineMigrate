@@ -7,7 +7,7 @@ To ease the transition to the new jasmine version this module contains some help
 
 ##Custom Matchers##
 Instead of adding the matcher on the this object, you add them on the jasmineMigrate object. But this is really all you need to to. The jasmineMigrate object will take care of the rest.
-```
+```javascript
 /* was:
     this.addMatchers({
 */
