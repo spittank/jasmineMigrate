@@ -1,8 +1,9 @@
-﻿/*globals jasmine:false, spyOn:true */
+/*globals jasmine:false, spyOn:true, it:true */
 
 //This module is to ease the transition from jasmine 1 to jasmine 2
 var jasmineMigrate = {},
-	originalSpyOn;
+	originalCreateSpy,
+	originalIt;
 
 jasmineMigrate.addMatchers = function (matchers) {
 	"use strict";
@@ -48,11 +49,11 @@ jasmineMigrate.addMatchers = function (matchers) {
 	});
 };
 
-originalSpyOn = spyOn;
+originalCreateSpy = jasmine.createSpy;
 
-spyOn = function () {
+jasmine.createSpy = function () {
 	"use strict";
-	var spyOnResult = originalSpyOn.apply(originalSpyOn, arguments);
+	var mySpy;
 
 	function addRecentCallProperty(propertyOwner) {
 		Object.defineProperty(propertyOwner, 'mostRecentCall', {
@@ -65,19 +66,31 @@ spyOn = function () {
 		});
 	}
 
-	spyOnResult.andCallFake = function () {
-		var result = spyOnResult.and.callFake.apply(spyOnResult, arguments);
-		addRecentCallProperty(result);
-		return result;
-	};
+	function addOldAndMethodsToSpy(spy) {
+		spy.andCallFake = function () {
+			var result = spy.and.callFake.apply(spy, arguments);
+			addRecentCallProperty(result);
+			return result;
+		};
 
-	spyOnResult.andCallThrough = function () {
-		var result = spyOnResult.and.callThrough.apply(spyOnResult, arguments);
-		addRecentCallProperty(result);
-		return result;
-	};
+		spy.andCallThrough = function () {
+			var result = spy.and.callThrough.apply(spy, arguments);
+			addRecentCallProperty(result);
+			return result;
+		};
 
-	return spyOnResult;
+		spy.andReturn = function () {
+			var result = spy.and.returnValue.apply(spy, arguments);
+			addRecentCallProperty(result);
+			return result;
+		};
+	}
+
+	mySpy = originalCreateSpy.apply(originalCreateSpy, arguments);
+
+	addOldAndMethodsToSpy(mySpy);
+
+	return mySpy;
 };
 
 jasmine.Clock = {};
@@ -94,4 +107,36 @@ jasmine.Clock.uninstallMock = function () {
 jasmine.Clock.tick = function (ticks) {
 	"use strict";
 	jasmine.clock().tick(ticks);
+};
+
+originalIt = it;
+
+it = function (specDescription, specFunction) {
+	"use strict";
+	//We need the current Spec description for generated tests. Current Spec was removed:
+	//https://groups.google.com/forum/#!topic/jasmine-js/IyZt7cPmBWo
+
+	originalIt.call(originalIt, specDescription, function () {
+		var thisForIt,
+			executeAfterIt = [];
+
+		jasmine.getEnv().currentSpec = {
+			description: specDescription
+		};
+
+		thisForIt = {
+			after: function (afterFunction) {
+				executeAfterIt.push(afterFunction);
+			}
+		};
+
+		try {
+			specFunction.apply(thisForIt);
+		}
+		finally {
+			executeAfterIt.forEach(function (afterIt) {
+				afterIt();
+			});
+		}
+	});
 };
