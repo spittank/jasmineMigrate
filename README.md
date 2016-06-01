@@ -17,6 +17,7 @@ Instead of adding the matcher on the this object, you add them on the jasmineMig
 Continue to use:
 * andCallThrough
 * andCallFake
+* andReturn
 * mostRecentCall
 
 ##Clock##
@@ -24,3 +25,8 @@ Continue to use:
 * jasmine.Clock.useMock()
 * jasmine.Clock.tick()
 * jasmine.Clock.uninstall()
+
+##Specs##
+Continue to use:
+* this.after
+* get access to the current spec description via jasmine.getEnv().currentSpec.description
