@@ -1,5 +1,5 @@
 # jasmineMigrate
-Version 2 of the JavaScript testing framework jasmine unfortunately introduced several breaking changes, as outlined here:
+Version 2 of the [JavaScript testing framework jasmine](https://github.com/jasmine/jasmine) unfortunately introduced several breaking changes, as outlined here:
 http://jasmine.github.io/2.0/upgrading.html
 
 
