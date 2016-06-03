@@ -57,7 +57,20 @@ jasmine.createSpy = function () {
 
 	function addRecentCallProperty(propertyOwner) {
 		Object.defineProperty(propertyOwner, 'mostRecentCall', {
-			get: function () { return propertyOwner.calls.mostRecent(); },
+			get: function () {
+				return propertyOwner.calls.mostRecent();
+			},
+			set: function () {
+				//Only a wrapper to make the function look like a property
+			},
+			enumerable: true,
+			configurable: false
+		});
+	}
+
+	function addCallCountProperty(propertyOwner) {
+		Object.defineProperty(propertyOwner, 'callCount', {
+			get: function () { return propertyOwner.calls.count(); },
 			set: function () {
 				//Only a wrapper to make the function look like a property
 			},
@@ -69,26 +82,35 @@ jasmine.createSpy = function () {
 	function addOldAndMethodsToSpy(spy) {
 		spy.andCallFake = function () {
 			var result = spy.and.callFake.apply(spy, arguments);
-			addRecentCallProperty(result);
 			return result;
 		};
 
 		spy.andCallThrough = function () {
 			var result = spy.and.callThrough.apply(spy, arguments);
-			addRecentCallProperty(result);
 			return result;
 		};
 
 		spy.andReturn = function () {
 			var result = spy.and.returnValue.apply(spy, arguments);
-			addRecentCallProperty(result);
+			return result;
+		};
+
+		spy.andThrow = function () {
+			var result = spy.and.throwError.apply(spy, arguments);
 			return result;
 		};
 	}
 
+	function addResetMethod(mySpy) {
+		mySpy.reset = mySpy.calls.reset;
+	}
+
 	mySpy = originalCreateSpy.apply(originalCreateSpy, arguments);
 
+	addRecentCallProperty(mySpy);
+	addCallCountProperty(mySpy);
 	addOldAndMethodsToSpy(mySpy);
+	addResetMethod(mySpy);
 
 	return mySpy;
 };
@@ -124,14 +146,12 @@ it = function (specDescription, specFunction) {
 			description: specDescription
 		};
 
-		thisForIt = {
-			after: function (afterFunction) {
-				executeAfterIt.push(afterFunction);
-			}
+		this.after = function (afterFunction) {
+			executeAfterIt.push(afterFunction);
 		};
 
 		try {
-			specFunction.apply(thisForIt);
+			specFunction.apply(this);
 		}
 		finally {
 			executeAfterIt.forEach(function (afterIt) {
