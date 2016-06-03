@@ -18,7 +18,10 @@ Continue to use:
 * andCallThrough
 * andCallFake
 * andReturn
+* andThrow
 * mostRecentCall
+* callCount
+* reset
 
 ##Clock##
 Continue to use:
